@@ -156,15 +156,13 @@ pub mod query {
     //TODO: move the query deposits code to this function.
     //we have to make this fn public
     pub fn query_deposits(deps: Deps, address:String) -> StdResult<DepositResponse> {
-        unimplemented!()
+        let res: StdResult<Vec<_>> = DEPOSITS.prefix(&address).range(deps.storage, None, None, Order::Ascending).collect();
+        let deposits = res?;
+        Ok(DepositResponse { deposits })
     }
 }
 
-fn query_deposits(deps: Deps, address:String) -> StdResult<DepositResponse> {
-    let res: StdResult<Vec<_>> = DEPOSITS.prefix(&address).range(deps.storage, None, None, Order::Ascending).collect();
-    let deposits = res?;
-    Ok(DepositResponse { deposits })
-}
+
 
 #[cfg(test)]
 mod tests { 
