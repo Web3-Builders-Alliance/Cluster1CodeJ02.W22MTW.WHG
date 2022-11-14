@@ -56,6 +56,8 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
 // TODO: move execute_deposit and execute_withdraw to the execute module.
 pub mod execute {
+    use cosmwasm_std::Addr;
+
     use super::*;
 
     pub fn execute_deposit(
@@ -66,7 +68,11 @@ pub mod execute {
         let d_coins = info.funds[0].clone();
         
         //TODO: Make sure sender is the owner in config
-    
+        let owner = CONFIG.load(deps.storage).unwrap().owner;
+        if sender != owner.into_string() {
+            return Err(ContractError::InvalidOwner {});
+        }
+        
         //TODO: make sure funds array is a length of 1
     
         //check to see if deposit exists
