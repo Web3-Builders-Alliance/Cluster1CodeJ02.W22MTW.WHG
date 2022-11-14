@@ -56,8 +56,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
 // TODO: move execute_deposit and execute_withdraw to the execute module.
 pub mod execute {
-    use cosmwasm_std::Addr;
-
     use super::*;
 
     pub fn execute_deposit(
@@ -191,7 +189,7 @@ mod tests {
         assert_eq!(AMOUNT.to_string(), res.attributes[2].value);
     }
 
-    fn withdraw_coins(deps: DepsMut) {
+    fn _withdraw_coins(_deps: DepsMut) {
 
     }
 

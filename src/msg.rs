@@ -1,4 +1,3 @@
-use cosmwasm_std::Deps;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
