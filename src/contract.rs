@@ -59,21 +59,66 @@ pub mod execute {
     use super::*;
 
     pub fn execute_deposit(
-        _deps: DepsMut,
-        _info: MessageInfo,
+        deps: DepsMut,
+        info: MessageInfo,
     ) -> Result<Response, ContractError> {
-        unimplemented!()
+        let sender = info.sender.clone().into_string();
+        let d_coins = info.funds[0].clone();
+        
+        //TODO: Make sure sender is the owner in config
+    
+        //TODO: make sure funds array is a length of 1
+    
+        //check to see if deposit exists
+        match DEPOSITS.load(deps.storage, (&sender, d_coins.denom.as_str())) {
+            Ok(mut deposit) => {
+                //add coins to their account
+                deposit.coins.amount = deposit.coins.amount.checked_add(d_coins.amount).unwrap();
+                deposit.count = deposit.count.checked_add(1).unwrap();
+                DEPOSITS.save(deps.storage, (&sender, d_coins.denom.as_str()), &deposit).unwrap();
+            }
+            Err(_) => {
+                //user does not exist, add them.
+                let deposit = Deposits {
+                    count: 1,
+                    owner: info.sender,
+                    coins: d_coins.clone(),
+                };
+                DEPOSITS.save(deps.storage, (&sender, d_coins.denom.as_str()), &deposit).unwrap();
+            }
+        }
+        Ok(Response::new()
+            .add_attribute("execute", "deposit")
+            .add_attribute("denom", d_coins.denom)
+            .add_attribute("amount", d_coins.amount)
+        )
     }
-
+    
     pub fn execute_withdraw(
-        _deps: DepsMut,
-        _info: MessageInfo,
-        _amount:u128,
-        _denom:String
+        deps: DepsMut,
+        info: MessageInfo,
+        amount:u128,
+        denom:String
     ) -> Result<Response, ContractError> {
-        unimplemented!()
+        let sender = info.sender.clone().into_string();
+    
+        let mut deposit = DEPOSITS.load(deps.storage, (&sender, denom.as_str())).unwrap();
+        deposit.coins.amount = deposit.coins.amount.checked_sub(Uint128::from(amount)).unwrap();
+        deposit.count = deposit.count.checked_sub(1).unwrap();
+        DEPOSITS.save(deps.storage, (&sender, denom.as_str()), &deposit).unwrap();
+    
+        let msg = BankMsg::Send {
+            to_address: sender.clone(),
+            amount: vec![coin(amount, denom.clone())],
+        };
+    
+        Ok(Response::new()
+            .add_attribute("execute", "withdraw")
+            .add_attribute("denom", denom)
+            .add_attribute("amount", amount.to_string())
+            .add_message(msg)
+        )
     }
-
     pub fn update_config(
         deps: DepsMut,
         info: MessageInfo,
@@ -104,68 +149,6 @@ pub mod query {
     pub fn query_deposits(deps: Deps, address:String) -> StdResult<DepositResponse> {
         unimplemented!()
     }
-}
-
-pub fn execute_deposit(
-    deps: DepsMut,
-    info: MessageInfo,
-) -> Result<Response, ContractError> {
-    let sender = info.sender.clone().into_string();
-    let d_coins = info.funds[0].clone();
-    
-    //TODO: Make sure sender is the owner in config
-
-    //TODO: make sure funds array is a length of 1
-
-    //check to see if deposit exists
-    match DEPOSITS.load(deps.storage, (&sender, d_coins.denom.as_str())) {
-        Ok(mut deposit) => {
-            //add coins to their account
-            deposit.coins.amount = deposit.coins.amount.checked_add(d_coins.amount).unwrap();
-            deposit.count = deposit.count.checked_add(1).unwrap();
-            DEPOSITS.save(deps.storage, (&sender, d_coins.denom.as_str()), &deposit).unwrap();
-        }
-        Err(_) => {
-            //user does not exist, add them.
-            let deposit = Deposits {
-                count: 1,
-                owner: info.sender,
-                coins: d_coins.clone(),
-            };
-            DEPOSITS.save(deps.storage, (&sender, d_coins.denom.as_str()), &deposit).unwrap();
-        }
-    }
-    Ok(Response::new()
-        .add_attribute("execute", "deposit")
-        .add_attribute("denom", d_coins.denom)
-        .add_attribute("amount", d_coins.amount)
-    )
-}
-
-pub fn execute_withdraw(
-    deps: DepsMut,
-    info: MessageInfo,
-    amount:u128,
-    denom:String
-) -> Result<Response, ContractError> {
-    let sender = info.sender.clone().into_string();
-
-    let mut deposit = DEPOSITS.load(deps.storage, (&sender, denom.as_str())).unwrap();
-    deposit.coins.amount = deposit.coins.amount.checked_sub(Uint128::from(amount)).unwrap();
-    deposit.count = deposit.count.checked_sub(1).unwrap();
-    DEPOSITS.save(deps.storage, (&sender, denom.as_str()), &deposit).unwrap();
-
-    let msg = BankMsg::Send {
-        to_address: sender.clone(),
-        amount: vec![coin(amount, denom.clone())],
-    };
-
-    Ok(Response::new()
-        .add_attribute("execute", "withdraw")
-        .add_attribute("denom", denom)
-        .add_attribute("amount", amount.to_string())
-        .add_message(msg)
-    )
 }
 
 fn query_deposits(deps: Deps, address:String) -> StdResult<DepositResponse> {
