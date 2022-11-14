@@ -66,14 +66,17 @@ pub mod execute {
     ) -> Result<Response, ContractError> {
         let sender = info.sender.clone().into_string();
         let d_coins = info.funds[0].clone();
-        
+        //TODO: make sure funds array is a length of 1
+        if info.funds.len() != 1 {
+            return Err(ContractError::InvalidCoin {  });
+        }
         //TODO: Make sure sender is the owner in config
         let owner = CONFIG.load(deps.storage).unwrap().owner;
         if sender != owner.into_string() {
             return Err(ContractError::InvalidOwner {});
         }
         
-        //TODO: make sure funds array is a length of 1
+        
     
         //check to see if deposit exists
         match DEPOSITS.load(deps.storage, (&sender, d_coins.denom.as_str())) {
