@@ -7,6 +7,7 @@ use cosmwasm_std::{
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, DepositResponse};
+//imported Config and CONFIG 
 use crate::state::{Deposits, DEPOSITS, Config, CONFIG};
 
 /*
@@ -34,6 +35,7 @@ pub fn execute(
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
+    //by using match we have to check every conditions 
     match msg {
         ExecuteMsg::Deposit { } => execute::execute_deposit(deps, info),
         ExecuteMsg::Withdraw { amount, denom } => execute::execute_withdraw(deps, info, amount, denom),
@@ -55,6 +57,8 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 // TODO: move execute_deposit and execute_withdraw to the execute module.
+//Module is collection of items, fn, sturcts, traits, impl blocks or modules
+//With modules we can organazie code within a crate into a groups
 pub mod execute {
     use super::*;
 
@@ -188,7 +192,7 @@ mod tests {
         assert_eq!(DENOM.to_string(), res.attributes[1].value);
         assert_eq!(AMOUNT.to_string(), res.attributes[2].value);
     }
-
+    //add _ to fn's name we've not used it yet
     fn _withdraw_coins(_deps: DepsMut) {
 
     }
