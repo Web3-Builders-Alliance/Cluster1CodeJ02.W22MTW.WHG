@@ -7,7 +7,7 @@ use cosmwasm_std::{
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, DepositResponse};
-use crate::state::{Deposits, DEPOSITS};
+use crate::state::{Deposits, DEPOSITS, Config, CONFIG};
 
 /*
 const CONTRACT_NAME: &str = "crates.io:deposit-native-example";
@@ -48,6 +48,9 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
             to_binary(&query::query_deposits(deps, address)?)
         }
         //TODO: add a querymsg for the get config function.
+        QueryMsg::Config{} => {
+            to_binary(&query::get_config(deps)?)
+        }
     }
 }
 
@@ -97,7 +100,8 @@ pub mod query {
     }
 
     //TODO: move the query deposits code to this function.
-    fn query_deposits(deps: Deps, address:String) -> StdResult<DepositResponse> {
+    //we have to make this fn public
+    pub fn query_deposits(deps: Deps, address:String) -> StdResult<DepositResponse> {
         unimplemented!()
     }
 }
